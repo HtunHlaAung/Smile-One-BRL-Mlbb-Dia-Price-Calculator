@@ -288,9 +288,9 @@
     <label for="profit">အမြတ်% Percentage:</label>
     <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
 
-    <label for="roundMode">Price Rounding Mode:</label>
+    <label for="roundMode">အစွန်းထွက် :</label>
     <select id="roundMode">
-      <option value="none">အစွန်းအထွက်အပါ ( အစွန်းထွက်နေတာပါလာမှာပါ)</option>
+      <option value="none">အစွန်းထွက်အပါ ( % နှင့် coinစျေးအလိုက်အစွန်းထွက်နေတာတွေပါလာမှာပါ)</option>
       <option value="fit">စျေးအတိအကျ (အစွန်းထွက်နေတာတွေကိုစျေးအတိပြောင်းပေးမှာပါ 50ksလောက်)</option>
     </select>
 
@@ -334,19 +334,19 @@
 <script>
 const normalData = [
   { diamond: 78, bonus: 8, coin: 61.5 },
-  { diamond: 86, bonus: 8, coin: 1378 },
-  { diamond: 100, bonus: 10, coin: 1575 },
-  { diamond: 185, bonus: 20, coin: 2950 },
-  { diamond: 222, bonus: 28, coin: 3530 },
-  { diamond: 257, bonus: 33, coin: 4120 },
-  { diamond: 296, bonus: 38, coin: 4745 },
-  { diamond: 343, bonus: 47, coin: 5480 },
-  { diamond: 366, bonus: 51, coin: 5850 },
-  { diamond: 408, bonus: 60, coin: 6530 },
-  { diamond: 568, bonus: 87, coin: 9100 },
-  { diamond: 875, bonus: 219, coin: 13700 },
-  { diamond: 1050, bonus: 305, coin: 16600 },
-  { diamond: 1412, bonus: 500, coin: 22250 },
+  { diamond: 156, bonus: 16, coin: 122 },
+  { diamond: 234, bonus: 23, coin: 177.5 },
+  { diamond: 312, bonus: 31, coin: 239 },
+  { diamond: 390, bonus: 39, coin: 299.5 },
+  { diamond: 468, bonus: 46, coin: 355 },
+  { diamond: 546, bonus: 54, coin: 416.5 },
+  { diamond: 625, bonus: 81, coin: 480 },
+  { diamond: 781, bonus: 97, coin: 602 },
+  { diamond: 859, bonus: 104, coin: 657.5 },
+  { diamond: 937, bonus: 112, coin: 719 },
+  { diamond: 1015, bonus: 120, coin: 779.5 },
+  { diamond: 1250, bonus: 162, coin: 960 },
+  { diamond: 1406, bonus: 178, coin: 1082 },
 
   // Weekly Pass
   { diamond: null, bonus: null, coin: 76, label: "Weekly Pass" },
