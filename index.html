@@ -294,7 +294,7 @@
       <option value="fit">စျေးအတိအကျ (အစွန်းထွက်နေတာတွေကိုစျေးအတိပြောင်းပေးမှာပါ 50ksလောက်)</option>
     </select>
 
-    <h3>Diamond List</h3>
+        <h3>Diamond List</h3>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -304,7 +304,7 @@
             <th>Coin Cost</th>
             <th>Guide</th>
             <th>အရင်း</th>
-            <th>​ရောင်းစျေး</th>
+            <th>ရောင်းစျေး</th>
             <th>အမြတ်</th>
           </tr>
         </thead>
@@ -321,6 +321,7 @@
             <th>Dia List</th>
             <th>Dia + Bonus</th>
             <th>Coin Cost</th>
+            <th>Guide</th>
             <th>အရင်း</th>
             <th>ရောင်းစျေး</th>
             <th>အမြတ်</th>
@@ -338,33 +339,41 @@ const normalData = [
   { diamond: 156, bonus: 16, coin: 122 },
   { diamond: 234, bonus: 23, coin: 177.5 },
   { diamond: 312, bonus: 31, coin: 239, guide: "86+257" },
-  { diamond: 390, bonus: 39, coin: 299.5 },
-  { diamond: 468, bonus: 46, coin: 355 },
-  { diamond: 546, bonus: 54, coin: 416.5 },
+  { diamond: 390, bonus: 39, coin: 299.5, guide: "172+257" },
+  { diamond: 468, bonus: 46, coin: 355, guide: "257+257" },
+  { diamond: 546, bonus: 54, coin: 416.5, guide: "86+257+257" },
   { diamond: 625, bonus: 81, coin: 480 },
-  { diamond: 781, bonus: 97, coin: 602 },
-  { diamond: 859, bonus: 104, coin: 657.5 },
-  { diamond: 937, bonus: 112, coin: 719 },
-  { diamond: 1015, bonus: 120, coin: 779.5 },
-  { diamond: 1250, bonus: 162, coin: 960 },
-  { diamond: 1406, bonus: 178, coin: 1082 },
-
-  // Weekly Pass
+  { diamond: 781, bonus: 97, coin: 602, guide: "172+706" },
+  { diamond: 859, bonus: 104, coin: 657.5, guide: "257+706" },
+  { diamond: 937, bonus: 112, coin: 719, guide: "86+257+706" },
+  { diamond: 1015, bonus: 120, coin: 779.5, guide: "172+257+706" },
+  { diamond: 1250, bonus: 162, coin: 960, guide: "706+706" },
+  { diamond: 1406, bonus: 178, coin: 1082, guide: "172+706+706" },
+  { diamond: 1484, bonus: 186, coin: 1143.5 },
+  { diamond: 1562, bonus: 193, coin: 1199, guide: "86+257+706+706" },
+  { diamond: 1860, bonus: 335, coin: 1453 },
+  { diamond: 2797, bonus: 447, coin: 2172, guide: "86+257+706+2195" },
+  { diamond: 3099, bonus: 589, coin: 2424 },
+  { diamond: 4349, bonus: 751, coin: 3384, guide: "706+706+3688" },
+  { diamond: 4649, bonus: 883, coin: 3660 },
+  { diamond: 7740, bonus: 1548, coin: 6079 },
+  // Weekly Pass (no dia/bonus)
   { diamond: null, bonus: null, coin: 76, label: "Weekly Pass" },
 
-  // Twilight Pass
+  // Twilight Pass (no dia/bonus)
   { diamond: null, bonus: null, coin: 402.5, label: "Twilight Pass" }
 ];
 
 const doubleDiamondData = [
   { diamond: 50, bonus: 5, coin: 440 },
-  { diamond: 165, bonus: 0, coin: 1320 },
-  { diamond: 275, bonus: 0, coin: 2200 },
-  { diamond: 565, bonus: 0, coin: 4520 }
+  { diamond: 150, bonus: 15, coin: 116.5 },
+  { diamond: 250, bonus: 25, coin: 187.5 },
+  { diamond: 500, bonus: 65, coin: 385 }
 ];
 
 function format(amount) {
-  return amount.toLocaleString("en-US");
+  // ensure number -> integer string with commas
+  return Number(amount).toLocaleString("en-US");
 }
 
 function roundPrice(price, mode) {
@@ -380,6 +389,7 @@ function fillTable(data, tableId) {
   const roundMode = document.getElementById("roundMode").value;
   const tbody = document.getElementById(tableId);
 
+  // If rate or profit empty -> clear and return
   if (isNaN(rate) || isNaN(profitPercent)) {
     tbody.innerHTML = "";
     return;
@@ -387,8 +397,8 @@ function fillTable(data, tableId) {
 
   tbody.innerHTML = "";
   data.forEach(item => {
-    if(item.label) {
-      // For passes with no diamonds/bonus
+    if (item.label) {
+      // Pass row: keep same number of columns (7) so alignment stays correct
       const costRaw = (item.coin / 1000) * rate;
       const profitAmt = costRaw * (profitPercent / 100);
       const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
@@ -396,26 +406,31 @@ function fillTable(data, tableId) {
 
       tbody.innerHTML += `
         <tr>
-          <td colspan="2">${item.label}</td>
+          <td>${item.label}</td>
+          <td>-</td>
           <td>${item.coin}</td>
-          <td>${format(costRaw)}</td>
+          <td>-</td>
+          <td>${format(Math.round(costRaw))}</td>
           <td>${format(Math.round(sellPrice))}</td>
           <td>${format(Math.round(profitCalc))}</td>
         </tr>
       `;
     } else {
       const total = item.diamond + item.bonus;
-      const costRaw = (item.coin / 1000) * rate;
-      const profitAmt = costRaw * (profitPercent / 100);
+      const costRaw = (item.coin / 1000) * rate;            // exact cost (before rounding sell)
+      const profitAmt = costRaw * (profitPercent / 100);   // profit amount (exact)
       const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
       const profitCalc = sellPrice - costRaw;
+
+      const guideText = item.guide ? item.guide : "-";
 
       tbody.innerHTML += `
         <tr>
           <td>${total}💎</td>
           <td>${item.diamond} + ${item.bonus}</td>
           <td>${item.coin}</td>
-          <td>${format(costRaw)}</td>
+          <td>${guideText}</td>
+          <td>${format(Math.round(costRaw))}</td>
           <td>${format(Math.round(sellPrice))}</td>
           <td>${format(Math.round(profitCalc))}</td>
         </tr>
@@ -432,13 +447,22 @@ function calculate() {
 function copyList(tableId) {
   const tbody = document.getElementById(tableId);
   const rows = tbody.querySelectorAll("tr");
-  if(rows.length === 0) return;
+  if (rows.length === 0) return;
 
   let text = "";
   rows.forEach(row => {
-    const total = row.cells[0].textContent.trim();
-    const sell = row.cells[4].textContent.trim();
-    text += `${total} Diamond = ${sell}Ks\n`;
+    const firstCell = row.cells[0].textContent.trim();
+    // Sell is always the second-to-last column in our layout
+    const sellCell = row.cells[row.cells.length - 2];
+    const sellText = sellCell ? sellCell.textContent.trim() : "";
+
+    // If firstCell is a label (contains non-digit letters) we'll copy label; otherwise copy "X Diamond"
+    if (/[^0-9💎\s]/.test(firstCell)) {
+      // label (e.g. "Weekly Pass")
+      text += `${firstCell} = ${sellText}Ks\n`;
+    } else {
+      text += `${firstCell} Diamond = ${sellText}Ks\n`;
+    }
   });
 
   navigator.clipboard.writeText(text).then(() => {
@@ -452,11 +476,7 @@ function copyList(tableId) {
 const toggleBtn = document.getElementById('toggleMode');
 toggleBtn.addEventListener('click', () => {
   document.body.classList.toggle('dark');
-  if(document.body.classList.contains('dark')) {
-    toggleBtn.textContent = 'Switch to Light Mode';
-  } else {
-    toggleBtn.textContent = 'Switch to Dark Mode';
-  }
+  toggleBtn.textContent = document.body.classList.contains('dark') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
 });
 
 // Event listeners
@@ -467,6 +487,7 @@ document.getElementById("roundMode").addEventListener("change", calculate);
 document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
 document.getElementById("copyDouble").addEventListener("click", () => copyList("doubleDiamondTable"));
 
+// initial
 calculate();
 </script>
 </body>
