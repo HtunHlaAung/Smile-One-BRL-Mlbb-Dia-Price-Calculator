@@ -437,7 +437,7 @@ function copyList(tableId) {
   rows.forEach(row => {
     const total = row.cells[0].textContent.trim();
     const sell = row.cells[4].textContent.trim();
-    text += `💎${total} Diamond = ${sell}Ks\n`;
+    text += `${total} Diamond = ${sell}Ks\n`;
   });
 
   navigator.clipboard.writeText(text).then(() => {
