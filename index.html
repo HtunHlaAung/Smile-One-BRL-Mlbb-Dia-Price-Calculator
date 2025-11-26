@@ -2,201 +2,326 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smile One MLBB Dia Price Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
+    /* --- THEME VARIABLES --- */
     :root {
-      /* Light mode colors */
-      --bg-color: #f5f5f7;
-      --container-bg: #ffffff;
-      --text-color: #222222;
-      --accent-color: #6c56be;
-      --accent-light: #987ddd;
-      --input-bg: #f0f0f5;
-      --input-shadow-inset: rgba(0,0,0,0.1);
-      --table-header-bg: #6c56be;
-      --table-row-bg: #ede9f7;
-      --table-row-hover: #d9d4f4;
-      --button-bg: #6c56be;
-      --button-hover-bg: #987ddd;
-      --button-shadow: rgba(108, 86, 190, 0.5);
+      --primary: #0b84ff;
+      --primary-dark: #0060c0;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%);
+      --surface: rgba(255, 255, 255, 0.65); /* Main Card Background */
+      --surface-light: rgba(255, 255, 255, 0.85); /* Input/Table Row Background */
+      --surface-border: rgba(255, 255, 255, 0.4);
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      --radius: 16px;
+      --font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+      --table-header-bg: var(--primary-dark);
+      --particle-color: rgba(11, 132, 255, 0.4); 
     }
 
     body.dark {
-      /* Dark mode colors */
-      --bg-color: #121212;
-      --container-bg: #2a2540dd;
-      --text-color: #f0f0f5;
-      --accent-color: #ad7eff;
-      --accent-light: #c3a7ff;
-      --input-bg: #3b3260;
-      --input-shadow-inset: rgba(0,0,0,0.6);
-      --table-header-bg: #5e49a1;
-      --table-row-bg: #4b3e8fdd;
-      --table-row-hover: #6c56becc;
-      --button-bg: #6c56be;
-      --button-hover-bg: #987ddd;
-      --button-shadow: rgba(124, 98, 219, 0.7);
+      --primary: #58a6ff; 
+      --primary-dark: #0b84ff;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --surface: rgba(30, 41, 59, 0.7);
+      --surface-light: rgba(30, 41, 59, 0.9);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --table-header-bg: var(--primary-dark);
+      --particle-color: rgba(255, 255, 255, 0.25); 
+    }
+    
+    /* --- ANIMATION KEYFRAMES --- */
+    @keyframes fadeInSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    /* --- CANVAS STYLES FOR PARTICLES --- */
+    #particleCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
     }
 
+    /* --- GENERAL STYLES --- */
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.25s, color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.25s;
     }
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
+      font-family: var(--font-family);
+      background: var(--bg-gradient);
+      color: var(--text);
       margin: 0;
-      padding: 30px 20px;
+      padding: 15px 12px;
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      -webkit-tap-highlight-color: transparent;
+      transition: background 0.3s ease;
+      font-size: 14px;
+      position: relative; 
     }
-    .container {
+    .calculator-card {
       max-width: 960px;
       width: 100%;
-      background: var(--container-bg);
-      border-radius: 16px;
+      background: var(--surface);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius);
       padding: 30px 40px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-      transition: background-color 0.3s ease;
-      user-select: none;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      animation: fadeInSlideUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      opacity: 0;
+      z-index: 1;
     }
+    
+    /* ::BEFORE: Static subtle border */
+    .calculator-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius);
+        padding: 1px; 
+        background: linear-gradient(135deg, rgba(11, 132, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        opacity: 0.8;
+        z-index: 2; 
+    }
+    .dark .calculator-card::before {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(11, 132, 255, 0.3) 100%);
+    }
+
+    /* Content z-index fix */
+    h2, h4, h3, label, input, .round-mode-selector, .table-wrapper, button, .toggle-switch {
+        position: relative;
+        z-index: 3; 
+    }
+
+
     h2 {
       text-align: center;
-      color: var(--accent-color);
-      font-weight: 600;
-      font-size: 2.4rem;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 2.2rem;
       margin-bottom: 25px;
-      text-shadow: 0 0 6px var(--accent-light);
+      text-shadow: 0 0 5px rgba(11, 132, 255, 0.3);
       transition: color 0.3s ease, text-shadow 0.3s ease;
       user-select: text;
     }
     h4 {
       text-align: center;
-      color: var(--accent-light);
+      color: var(--text-muted);
       margin-top: -10px;
       font-weight: 500;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       user-select: text;
-      transition: color 0.3s ease, text-shadow 0.3s ease;
+      transition: color 0.3s ease;
     }
     h3 {
-      color: var(--accent-light);
+      color: var(--primary);
       font-weight: 600;
-      font-size: 1.5rem;
-      margin: 40px 0 20px;
+      font-size: 1.4rem;
+      margin: 35px 0 15px;
       text-align: center;
-      text-shadow: 0 0 5px var(--accent-light);
-      transition: color 0.3s ease, text-shadow 0.3s ease;
+      transition: color 0.3s ease;
       user-select: text;
     }
     label {
       display: block;
       font-weight: 500;
-      font-size: 1.05rem;
+      font-size: 1rem;
       margin-bottom: 8px;
-      color: var(--text-color);
-      opacity: 0.8;
+      color: var(--text-muted);
       user-select: none;
       transition: color 0.3s ease;
     }
     input[type="number"],
     select {
       width: 100%;
-      padding: 14px 18px;
-      font-size: 1.1rem;
+      padding: 12px 16px;
+      font-size: 1rem;
       border-radius: 10px;
-      border: none;
-      background: var(--input-bg);
-      color: var(--text-color);
-      box-shadow: inset 2px 2px 8px var(--input-shadow-inset),
-                  inset -2px -2px 8px var(--input-shadow-inset);
-      transition:
-        background-color 0.3s ease,
-        box-shadow 0.3s ease,
-        color 0.3s ease;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-light);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
       margin-bottom: 20px;
-      outline-offset: 3px;
+      outline: none;
+      transition: all 0.3s ease; /* Ensure box-shadow transition is smooth */
     }
+
+    /* --- NEW: Enhanced Pulsing Focus Glow (Light Mode) --- */
     input[type="number"]:focus,
     select:focus {
-      background-color: var(--accent-color);
-      color: #fff;
-      box-shadow: 0 0 12px var(--accent-light), 0 0 6px var(--accent-light) inset;
-      outline: none;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(11, 132, 255, 0.6), 0 0 0 3px rgba(11, 132, 255, 0.3);
     }
-    .table-wrapper {
-      overflow-x: auto;
-      margin-top: 15px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-      background: var(--container-bg);
-      padding: 10px;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    
+    /* --- NEW: Enhanced Pulsing Focus Glow (Dark Mode) --- */
+    .dark input[type="number"]:focus,
+    .dark select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(88, 166, 255, 0.5), 0 0 0 3px rgba(88, 166, 255, 0.25);
     }
-    table {
-      border-collapse: separate;
-      border-spacing: 0 12px;
-      font-size: 0.95rem;
-      width: 100%;
-      min-width: 650px;
-      background-color: transparent;
-      color: var(--text-color);
-      transition: color 0.3s ease;
-    }
-    thead tr {
-      background-color: var(--table-header-bg);
-      color: #f3f0ff;
-      font-weight: 600;
-      text-shadow: 0 0 4px var(--accent-light);
-      transition: background-color 0.3s ease;
-    }
-    thead th, tbody td {
-      padding: 12px 20px;
-      text-align: center;
-      white-space: nowrap;
-      border-radius: 8px;
-    }
-    tbody tr {
-      background-color: var(--table-row-bg);
-      transition: background-color 0.25s ease;
-      cursor: default;
-    }
-    tbody tr:hover {
-      background-color: var(--table-row-hover);
-      box-shadow: 0 0 10px var(--accent-light);
-    }
+
+    /* --- Button Styling (Primary) --- */
     button.copy-btn {
       display: block;
       margin: 30px auto 10px auto;
-      background-color: var(--button-bg);
+      background: var(--primary);
       color: white;
       border: none;
       padding: 14px 30px;
       border-radius: 12px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 8px 18px var(--button-shadow);
-      transition: background-color 0.35s ease, box-shadow 0.35s ease;
+      position: static; 
+      z-index: 3;
+      overflow: visible;
+      box-shadow: 0 5px 15px rgba(11, 132, 255, 0.4);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
       user-select: none;
-      letter-spacing: 0.05em;
-    }
-    button.copy-btn:hover {
-      background-color: var(--button-hover-bg);
-      box-shadow: 0 10px 26px var(--button-shadow);
-    }
-    button.copy-btn:active {
-      background-color: #5a45a4;
-      box-shadow: 0 4px 10px var(--button-shadow);
+      letter-spacing: 0.02em;
     }
 
+    button.copy-btn:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 7px 20px rgba(11, 132, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    button.copy-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(11, 132, 255, 0.4);
+    }
+    
+    button.copy-btn i {
+        position: static;
+        z-index: auto;
+    }
+
+    /* --- Round Mode Selector Button Group --- */
+    .round-mode-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: var(--surface-light);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s; 
+      font-size: 0.95rem;
+    }
+    .mode-btn:hover {
+      background: rgba(11, 132, 255, 0.1);
+      color: var(--text);
+      transform: none;
+    }
+    .dark .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(11, 132, 255, 0.3);
+      font-weight: 600;
+      transform: scale(1.02); 
+    }
+    .mode-btn.active:hover {
+      background: var(--primary-dark);
+      color: white;
+      transform: scale(1.02);
+    }
+
+
+    /* --- Table Styles --- */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 15px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      padding: 1px; 
+    }
+    table {
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      width: 100%;
+      min-width: 650px;
+      color: var(--text);
+    }
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--table-header-bg);
+        color: white;
+    }
+    thead th {
+      padding: 14px 20px;
+      text-align: center;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    tbody tr {
+      background-color: var(--surface-light);
+      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: default;
+    }
+    tbody td {
+        padding: 10px 20px;
+        text-align: center;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--surface-border);
+    }
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    tbody tr:hover {
+      background-color: rgba(11, 132, 255, 0.1);
+      transform: translateY(-1px); 
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .dark tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
     /* Logo styles */
     .logo-container {
       text-align: center;
@@ -204,97 +329,148 @@
       user-select: none;
     }
     .logo-container img {
-      max-width: 200px;
-      width: 50vw;
+      max-width: 180px;
+      width: 40vw;
       height: auto;
-      user-drag: none;
-      -webkit-user-drag: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      pointer-events: none;
       border-radius: 12px;
-      transition: filter 0.3s ease;
     }
 
-    /* Toggle switch style */
+    /* --- Toggle switch style --- */
     .toggle-switch {
-      position: fixed;
+      position: absolute;
       top: 15px;
       right: 20px;
-      background: var(--container-bg);
-      border-radius: 50px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      padding: 8px 16px;
-      font-weight: 600;
-      color: var(--text-color);
+      background: var(--surface);
+      backdrop-filter: blur(5px);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 8px 12px;
+      font-weight: 500;
+      color: var(--text-muted);
       cursor: pointer;
       user-select: none;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      z-index: 1000;
+      font-size: 0.9rem;
+      transition: all 0.25s;
+      z-index: 3;
     }
     .toggle-switch:hover {
-      background-color: var(--accent-light);
-      color: #fff;
+      background-color: var(--surface-light);
+      color: var(--primary);
+      transform: translateY(-1px); 
+    }
+    .toggle-switch:active {
+      transform: translateY(0);
+    }
+    /* --- Toast Notification (Non-blocking alert) --- */
+    .toast-message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+      transform: translateY(100%);
+      z-index: 2000;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-message.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
 
+    /* --- Responsive Adjustments --- */
     @media (max-width: 520px) {
-      .container {
-        padding: 20px 20px 30px 20px;
+      .calculator-card {
+        padding: 20px 15px 30px 15px;
       }
       h2 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
       }
       h3 {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
+      }
+      label {
+        font-size: 0.9rem;
       }
       input[type="number"], select {
-        font-size: 1rem;
-        padding: 12px 15px;
+        font-size: 0.95rem;
+        padding: 10px 12px;
       }
       thead th, tbody td {
         padding: 8px 10px;
-        font-size: 0.85rem;
-      }
-      table {
-        min-width: 100%;
+        font-size: 0.8rem;
       }
       button.copy-btn {
         width: 100%;
         font-size: 1rem;
         padding: 12px 0;
       }
+      .toggle-switch {
+        top: 10px;
+        right: 10px;
+        font-size: 0.8rem;
+        padding: 6px 10px;
+      }
+      .mode-btn {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="toggle-switch" id="toggleMode">Switch to Dark Mode</div>
+  
+  <!-- BACKGROUND PARTICLE CANVAS -->
+  <canvas id="particleCanvas"></canvas>
 
-  <div class="container">
-    <!-- Logo -->
-    <div class="logo-container" title="MLBB Price Calculator">
-      <img src="SmileOne.svg" alt="SmileOne Logo" draggable="false" oncontextmenu="return false;" />
+  <div class="calculator-card">
+    <div class="toggle-switch" id="toggleMode">
+      <i class="fas fa-moon"></i> Dark Mode
     </div>
 
-    <h2>🇧🇷Smile One BRL MLBB Dia Price Calculator</h2>
-    <h4 style="text-align:center; color: var(--accent-light); margin-top: -10px; font-weight: 500;">
-      MagicMall GameShop
-    </h4>
-    <label for="rate">SmileOne🇧🇷 Coin Rate (Price per 1000 coins):</label>
-    <input type="number" id="rate" placeholder="e.g. *****ks" min="0" step="any" value="" />
+    <!-- Logo -->
+    <div class="logo-container" title="MLBB Price Calculator">
+      <img src="https://placehold.co/180x60/0b84ff/ffffff?text=MLBB+Pricing" alt="MLBB Pricing Tool" draggable="false" oncontextmenu="return false;" />
+    </div>
 
-    <label for="profit">အမြတ်% Percentage:</label>
+    <h2>🇧🇷 Smile One BRL MLBB Dia Price Calculator</h2>
+    <h4>MagicMall GameShop</h4>
+    
+    <label for="rate">
+      <i class="fas fa-coins"></i> SmileOne🇧🇷 Coin Rate (Price per 1000 coins):
+    </label>
+    <input type="number" id="rate" placeholder="e.g. 52000" min="0" step="any" />
+
+    <label for="profit">
+      <i class="fas fa-chart-line"></i> အမြတ်% Percentage:
+    </label>
     <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
 
-    <label for="roundMode">အစွန်းထွက် :</label>
-    <select id="roundMode">
-      <option value="none">အစွန်းထွက်အပါ ( % နှင့် coinစျေးအလိုက်အစွန်းထွက်နေတာတွေပါလာမှာပါ)</option>
-      <option value="fit">စျေးအတိအကျ (အစွန်းထွက်နေတာတွေကိုစျေးအတိပြောင်းပေးမှာပါ 50ksလောက်)</option>
-    </select>
+    <label for="roundMode-group">
+      <i class="fas fa-cash-register"></i> အစွန်းထွက် Rounding:
+    </label>
+    
+    <!-- Round Mode Selector (Button Group) -->
+    <div id="roundMode" class="round-mode-selector" role="radiogroup">
+      <button data-mode="none" class="mode-btn" aria-checked="true" role="radio">
+        အစွန်းထွက်အပါ (Exact)
+      </button>
+      <button data-mode="fit" class="mode-btn" aria-checked="false" role="radio">
+        စျေးအတိအကျ (Nearest 50)
+      </button>
+    </div>
 
-        <h3>Diamond List</h3>
+    <h3><i class="fas fa-gem"></i> Diamond List</h3>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -303,17 +479,19 @@
             <th>Dia + Bonus</th>
             <th>Coin Cost</th>
             <th>Guide</th>
-            <th>အရင်း</th>
-            <th>ရောင်းစျေး</th>
-            <th>အမြတ်</th>
+            <th>အရင်း (Cost)</th>
+            <th>ရောင်းစျေး (Sell)</th>
+            <th>အမြတ် (Profit)</th>
           </tr>
         </thead>
         <tbody id="resultTable"></tbody>
       </table>
     </div>
-    <button class="copy-btn" id="copyNormal">Copy Diamond Price List</button>
+    <button class="copy-btn" id="copyNormal">
+      <i class="fas fa-copy"></i> Copy Diamond Price List
+    </button>
 
-    <h3>Double Diamond</h3>
+    <h3><i class="fas fa-star"></i> Double Diamond</h3>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -322,18 +500,27 @@
             <th>Dia + Bonus</th>
             <th>Coin Cost</th>
             <th>Guide</th>
-            <th>အရင်း</th>
-            <th>ရောင်းစျေး</th>
-            <th>အမြတ်</th>
+            <th>အရင်း (Cost)</th>
+            <th>ရောင်းစျေး (Sell)</th>
+            <th>အမြတ် (Profit)</th>
           </tr>
         </thead>
         <tbody id="doubleDiamondTable"></tbody>
       </table>
     </div>
-    <button class="copy-btn" id="copyDouble">Copy Double Diamond Price List</button>
+    <button class="copy-btn" id="copyDouble">
+      <i class="fas fa-copy"></i> Copy Double Diamond Price List
+    </button>
   </div>
 
+  <!-- Toast Notification Markup -->
+  <div id="toast" class="toast-message">
+    <i class="fas fa-check-circle"></i> <span></span>
+  </div>
+
+
 <script>
+// --- DATA DEFINITION (Unchanged) ---
 const normalData = [
   { diamond: 78, bonus: 8, coin: 61.5 },
   { diamond: 156, bonus: 16, coin: 122 },
@@ -357,10 +544,8 @@ const normalData = [
   { diamond: 4349, bonus: 751, coin: 3384, guide: "706+706+3688" },
   { diamond: 4649, bonus: 883, coin: 3660 },
   { diamond: 7740, bonus: 1548, coin: 6079 },
-  // Weekly Pass (no dia/bonus)
+  // Passes
   { diamond: null, bonus: null, coin: 76, label: "Weekly Pass" },
-
-  // Twilight Pass (no dia/bonus)
   { diamond: null, bonus: null, coin: 402.5, label: "Twilight Pass" }
 ];
 
@@ -371,8 +556,19 @@ const doubleDiamondData = [
   { diamond: 500, bonus: 65, coin: 385 }
 ];
 
+// --- UTILITY FUNCTIONS (Unchanged) ---
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  const toastSpan = toast.querySelector('span');
+  toastSpan.textContent = message;
+  toast.classList.add('show');
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000); // Hide after 3 seconds
+}
+
 function format(amount) {
-  // ensure number -> integer string with commas
   return Number(amount).toLocaleString("en-US");
 }
 
@@ -380,66 +576,72 @@ function roundPrice(price, mode) {
   if (mode === "fit") {
     return Math.ceil(price / 50) * 50;
   }
-  return price;
+  return Math.round(price);
 }
 
+function getSelectedRoundMode() {
+    const activeBtn = document.querySelector('#roundMode .mode-btn.active');
+    return activeBtn ? activeBtn.dataset.mode : 'none';
+}
+
+// --- CORE LOGIC (Unchanged) ---
 function fillTable(data, tableId) {
-  const rate = parseFloat(document.getElementById("rate").value);
-  const profitPercent = parseFloat(document.getElementById("profit").value);
-  const roundMode = document.getElementById("roundMode").value;
+  const rateInput = document.getElementById("rate");
+  const profitInput = document.getElementById("profit");
+  const rate = parseFloat(rateInput.value);
+  const profitPercent = parseFloat(profitInput.value);
+  const roundMode = getSelectedRoundMode();
   const tbody = document.getElementById(tableId);
 
-  // If rate or profit empty -> clear and return
-  if (isNaN(rate) || isNaN(profitPercent)) {
+  if (isNaN(rate) || rate <= 0 || isNaN(profitPercent) || profitPercent < 0) {
     tbody.innerHTML = "";
+    rateInput.classList.toggle('invalid', isNaN(rate) || rate <= 0);
     return;
   }
+  rateInput.classList.remove('invalid');
 
   tbody.innerHTML = "";
   data.forEach(item => {
-    if (item.label) {
-      // Pass row: keep same number of columns (7) so alignment stays correct
-      const costRaw = (item.coin / 1000) * rate;
-      const profitAmt = costRaw * (profitPercent / 100);
-      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
-      const profitCalc = sellPrice - costRaw;
+    const costRaw = (item.coin / 1000) * rate;           
+    const profitAmt = costRaw * (profitPercent / 100);  
+    
+    let sellPriceRaw = costRaw + profitAmt;
+    let sellPrice = roundPrice(sellPriceRaw, roundMode);
 
-      tbody.innerHTML += `
-        <tr>
-          <td>${item.label}</td>
-          <td>-</td>
-          <td>${item.coin}</td>
-          <td>-</td>
-          <td>${format(Math.round(costRaw))}</td>
-          <td>${format(Math.round(sellPrice))}</td>
-          <td>${format(Math.round(profitCalc))}</td>
-        </tr>
-      `;
+    const profitCalc = sellPrice - costRaw;
+    
+    const guideText = item.guide ? item.guide : "-";
+    let diaListText;
+    let diaBonusText;
+
+    if (item.label) {
+      diaListText = item.label;
+      diaBonusText = "-";
     } else {
       const total = item.diamond + item.bonus;
-      const costRaw = (item.coin / 1000) * rate;            // exact cost (before rounding sell)
-      const profitAmt = costRaw * (profitPercent / 100);   // profit amount (exact)
-      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
-      const profitCalc = sellPrice - costRaw;
-
-      const guideText = item.guide ? item.guide : "-";
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${total}💎</td>
-          <td>${item.diamond} + ${item.bonus}</td>
-          <td>${item.coin}</td>
-          <td>${guideText}</td>
-          <td>${format(Math.round(costRaw))}</td>
-          <td>${format(Math.round(sellPrice))}</td>
-          <td>${format(Math.round(profitCalc))}</td>
-        </tr>
-      `;
+      diaListText = `${total}💎`;
+      diaBonusText = `${item.diamond} + ${item.bonus}`;
     }
+
+    tbody.innerHTML += `
+      <tr class="data-row">
+        <td>${diaListText}</td>
+        <td>${diaBonusText}</td>
+        <td>${item.coin}</td>
+        <td>${guideText}</td>
+        <td>${format(Math.round(costRaw))}Ks</td>
+        <td><strong style="color: var(--primary);">${format(sellPrice)}Ks</strong></td>
+        <td>${format(Math.round(profitCalc))}Ks</td>
+      </tr>
+    `;
   });
 }
 
 function calculate() {
+  localStorage.setItem('mlbb_calc_rate', document.getElementById("rate").value);
+  localStorage.setItem('mlbb_calc_profit', document.getElementById("profit").value);
+  localStorage.setItem('mlbb_calc_roundMode', getSelectedRoundMode());
+
   fillTable(normalData, "resultTable");
   fillTable(doubleDiamondData, "doubleDiamondTable");
 }
@@ -447,48 +649,179 @@ function calculate() {
 function copyList(tableId) {
   const tbody = document.getElementById(tableId);
   const rows = tbody.querySelectorAll("tr");
-  if (rows.length === 0) return;
+  
+  if (rows.length === 0) {
+    showToast("Please enter the Coin Rate and Profit before copying.");
+    return;
+  }
 
   let text = "";
   rows.forEach(row => {
     const firstCell = row.cells[0].textContent.trim();
-    // Sell is always the second-to-last column in our layout
-    const sellCell = row.cells[row.cells.length - 2];
-    const sellText = sellCell ? sellCell.textContent.trim() : "";
+    const sellText = row.cells[5].textContent.trim(); 
 
-    // If firstCell is a label (contains non-digit letters) we'll copy label; otherwise copy "X Diamond"
+    const cleanSellText = sellText.replace(/Ks/g, '').trim();
+
     if (/[^0-9💎\s]/.test(firstCell)) {
-      // label (e.g. "Weekly Pass")
-      text += `${firstCell} = ${sellText}Ks\n`;
+      text += `${firstCell} = ${cleanSellText} Ks\n`;
     } else {
-      text += `${firstCell} Diamond = ${sellText}Ks\n`;
+      text += `${firstCell} Diamond = ${cleanSellText} Ks\n`;
     }
   });
 
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Copied to clipboard!");
-  }).catch(() => {
-    alert("Failed to copy. Please copy manually.");
-  });
+  try {
+    const tempElement = document.createElement('textarea');
+    tempElement.value = text;
+    document.body.appendChild(tempElement);
+    tempElement.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempElement);
+    showToast("Price List Copied Successfully!");
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+    showToast("Failed to copy. Please copy manually.");
+  }
 }
 
-// Toggle dark mode
-const toggleBtn = document.getElementById('toggleMode');
-toggleBtn.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  toggleBtn.textContent = document.body.classList.contains('dark') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-});
+// --- PARTICLE LOGIC (Unchanged from last step) ---
 
-// Event listeners
-document.getElementById("rate").addEventListener("input", calculate);
-document.getElementById("profit").addEventListener("input", calculate);
-document.getElementById("roundMode").addEventListener("change", calculate);
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const particleCount = 150; 
 
-document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
-document.getElementById("copyDouble").addEventListener("click", () => copyList("doubleDiamondTable"));
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
 
-// initial
-calculate();
+class Particle {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.radius = Math.random() * 1.5 + 1;
+    this.velocity = {
+      x: (Math.random() - 0.5) * 0.5,
+      y: (Math.random() - 0.5) * 0.5
+    };
+    this.opacity = Math.random() * 0.7 + 0.3;
+    this.time = Math.random() * 100;
+    this.life = 0;
+    this.maxLife = Math.random() * 500 + 300;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    const particleColor = getComputedStyle(document.documentElement).getPropertyValue('--particle-color').trim();
+    ctx.fillStyle = particleColor.replace(/,\s*\d+\)/, `, ${this.opacity * (1 - this.life / this.maxLife)})`); 
+    ctx.fill();
+  }
+
+  update() {
+    this.life++;
+
+    this.x += this.velocity.x + Math.sin(this.time * 0.05) * 0.1;
+    this.y += this.velocity.y + Math.cos(this.time * 0.05) * 0.1;
+    this.time++;
+
+    if (this.life > this.maxLife || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+        this.reset();
+    }
+  }
+}
+
+function createParticles() {
+  particles = [];
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+}
+
+function animateParticles() {
+  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'source-over';
+
+  particles.forEach(particle => {
+    particle.update();
+    particle.draw();
+  });
+
+  requestAnimationFrame(animateParticles);
+}
+
+// --- INITIALIZATION ---
+function init() {
+    // 1. Load from Local Storage
+    const savedRate = localStorage.getItem('mlbb_calc_rate');
+    const savedProfit = localStorage.getItem('mlbb_calc_profit');
+    const savedRoundMode = localStorage.getItem('mlbb_calc_roundMode') || 'none'; 
+
+    if (savedRate) { document.getElementById("rate").value = savedRate; }
+    if (savedProfit) { document.getElementById("profit").value = savedProfit; }
+    
+    document.querySelectorAll('#roundMode .mode-btn').forEach(btn => {
+        const isActive = btn.dataset.mode === savedRoundMode;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive);
+    });
+    
+    // 2. Initial Calculation
+    calculate();
+
+    // 3. Set Event Listeners
+    document.getElementById("rate").addEventListener("input", calculate);
+    document.getElementById("profit").addEventListener("input", calculate);
+
+    document.getElementById("roundMode").addEventListener("click", (event) => {
+        const target = event.target;
+        if (target.classList.contains('mode-btn') && !target.classList.contains('active')) {
+            document.querySelectorAll('#roundMode .mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-checked', 'false');
+            });
+            target.classList.add('active');
+            target.setAttribute('aria-checked', 'true');
+            calculate();
+        }
+    });
+
+    document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
+    document.getElementById("copyDouble").addEventListener("click", () => copyList("doubleDiamondTable"));
+
+    // 4. Dark Mode Toggle Logic
+    const toggleBtn = document.getElementById('toggleMode');
+    const isDarkInitial = localStorage.getItem('mlbb_calc_dark') === 'true';
+
+    if (isDarkInitial) {
+        document.body.classList.add('dark');
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+    }
+    
+    toggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('mlbb_calc_dark', isDark);
+      toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+    });
+
+    // 5. Initialize and Start Particles
+    resizeCanvas();
+    createParticles();
+    animateParticles();
+    window.addEventListener('resize', resizeCanvas);
+}
+
+// Run initialization when the window loads
+window.onload = init;
 </script>
 </body>
 </html>
+
