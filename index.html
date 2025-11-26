@@ -22,6 +22,7 @@
       --font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
       --table-header-bg: var(--primary-dark);
       --particle-color: rgba(11, 132, 255, 0.4); 
+      --highlight-bg: #e6f0ff; /* Light blue background for highlight */
     }
 
     body.dark {
@@ -36,6 +37,7 @@
       --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       --table-header-bg: var(--primary-dark);
       --particle-color: rgba(255, 255, 255, 0.25); 
+      --highlight-bg: #0d294d; /* Dark blue background for highlight */
     }
     
     /* --- ANIMATION KEYFRAMES --- */
@@ -116,11 +118,21 @@
     }
 
     /* Content z-index fix */
-    h2, h4, h3, label, input, .round-mode-selector, .table-wrapper, button, .toggle-switch {
+    h2, h4, h3, label, input, .round-mode-selector, .table-wrapper, button, .toggle-switch, .input-group-row {
         position: relative;
         z-index: 3; 
     }
 
+    /* --- New Grid Layout for Inputs --- */
+    .input-group-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .input-col {
+        flex: 1;
+        min-width: 0;
+    }
 
     h2 {
       text-align: center;
@@ -169,19 +181,22 @@
       background: var(--surface-light);
       color: var(--text);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
-      margin-bottom: 20px;
+      margin-bottom: 20px; /* Only bottom margin for single rate input */
       outline: none;
-      transition: all 0.3s ease; /* Ensure box-shadow transition is smooth */
+      transition: all 0.3s ease;
+    }
+    /* Margin reset for inputs inside a column */
+    .input-col input[type="number"] {
+        margin-bottom: 0; 
     }
 
-    /* --- NEW: Enhanced Pulsing Focus Glow (Light Mode) --- */
+    /* Pulsing Focus Glow */
     input[type="number"]:focus,
     select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 15px rgba(11, 132, 255, 0.6), 0 0 0 3px rgba(11, 132, 255, 0.3);
     }
     
-    /* --- NEW: Enhanced Pulsing Focus Glow (Dark Mode) --- */
     .dark input[type="number"]:focus,
     .dark select:focus {
       border-color: var(--primary);
@@ -313,6 +328,7 @@
     tbody tr:last-child td {
       border-bottom: none;
     }
+    /* Hover effect for the entire row, slightly lifts it */
     tbody tr:hover {
       background-color: rgba(11, 132, 255, 0.1);
       transform: translateY(-1px); 
@@ -322,6 +338,37 @@
       background-color: rgba(255, 255, 255, 0.05);
     }
     
+    /* --- Sell Price Highlight Gem Effect --- */
+    .sell-price-cell {
+        position: relative;
+        overflow: hidden; 
+        background-color: var(--highlight-bg) !important; 
+        font-weight: 600;
+        transform-style: preserve-3d;
+        z-index: 1;
+    }
+
+    .sell-price-text {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: var(--surface-light);
+        color: var(--primary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        transform: translateZ(0); 
+    }
+
+    tbody tr:hover .sell-price-cell {
+        transform: scale(1.05) translateZ(5px);
+    }
+
+    tbody tr:hover .sell-price-text {
+        box-shadow: 0 0 15px rgba(11, 132, 255, 0.5), 0 0 5px rgba(0, 0, 0, 0.1);
+        background: var(--surface); 
+    }
+    /* ------------------------------------------------ */
+
     /* Logo styles */
     .logo-container {
       text-align: center;
@@ -389,6 +436,15 @@
     }
 
     /* --- Responsive Adjustments --- */
+    @media (max-width: 600px) {
+      .input-group-row {
+        flex-direction: column;
+        gap: 0; 
+      }
+      .input-col input[type="number"] {
+        margin-bottom: 20px;
+      }
+    }
     @media (max-width: 520px) {
       .calculator-card {
         padding: 20px 15px 30px 15px;
@@ -440,7 +496,7 @@
 
     <!-- Logo -->
     <div class="logo-container" title="MLBB Price Calculator">
-      <img src="https://placehold.co/180x60/0b84ff/ffffff?text=MagicMall+GameShop" alt="MLBB Pricing Tool" draggable="false" oncontextmenu="return false;" />
+      <img src="https://placehold.co/240x60/0b84ff/ffffff?text=MagicMall+GameShop" alt="MLBB Pricing Tool" draggable="false" oncontextmenu="return false;" />
     </div>
 
     <h2>🇧🇷 Smile One BRL MLBB Dia Price Calculator</h2>
@@ -451,22 +507,34 @@
     </label>
     <input type="number" id="rate" placeholder="e.g. 52000" min="0" step="any" />
 
-    <label for="profit">
-      <i class="fas fa-chart-line"></i> အမြတ်% Percentage:
-    </label>
-    <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
+    <!-- TIERED PROFIT MARGINS -->
+    <div class="input-group-row">
+      <div class="input-col">
+        <label for="profit_standard">
+          <i class="fas fa-gem"></i> Diamond အမြတ် %:
+        </label>
+        <input type="number" id="profit_standard" placeholder="e.g. 10" min="0" step="any" value="10" />
+      </div>
+      <div class="input-col">
+        <label for="profit_pass">
+          <i class="fas fa-star-half-alt"></i> WeeklyPass/Twilight အမြတ် %:
+        </label>
+        <input type="number" id="profit_pass" placeholder="e.g. 5" min="0" step="any" value="5" />
+      </div>
+    </div>
+    <!-- END TIERED PROFIT MARGINS -->
 
     <label for="roundMode-group">
-      <i class="fas fa-cash-register"></i> အစွန်းထွက် Rounding:
+      <i class="fas fa-cash-register"></i> အစွန်းထွက် :
     </label>
     
     <!-- Round Mode Selector (Button Group) -->
     <div id="roundMode" class="round-mode-selector" role="radiogroup">
-      <button data-mode="none" class="mode-btn" aria-checked="true" role="radio">
-        အစွန်းထွက်အပါ (Exact)
+      <button data-mode="none" class="mode-btn active" aria-checked="true" role="radio">
+        အစွန်းထွက်အပါ (Exact Price)
       </button>
       <button data-mode="fit" class="mode-btn" aria-checked="false" role="radio">
-        စျေးအတိအကျ (Nearest 50)
+        စျေးအတိအကျ (Nearest 50ks)
       </button>
     </div>
 
@@ -544,7 +612,7 @@ const normalData = [
   { diamond: 4349, bonus: 751, coin: 3384, guide: "706+706+3688" },
   { diamond: 4649, bonus: 883, coin: 3660 },
   { diamond: 7740, bonus: 1548, coin: 6079 },
-  // Passes
+  // Passes (Lower margin items)
   { diamond: null, bonus: null, coin: 76, label: "Weekly Pass" },
   { diamond: null, bonus: null, coin: 402.5, label: "Twilight Pass" }
 ];
@@ -565,7 +633,7 @@ function showToast(message) {
   
   setTimeout(() => {
     toast.classList.remove('show');
-  }, 3000); // Hide after 3 seconds
+  }, 3000); 
 }
 
 function format(amount) {
@@ -574,6 +642,7 @@ function format(amount) {
 
 function roundPrice(price, mode) {
   if (mode === "fit") {
+    // Round to the nearest 50
     return Math.ceil(price / 50) * 50;
   }
   return Math.round(price);
@@ -584,16 +653,21 @@ function getSelectedRoundMode() {
     return activeBtn ? activeBtn.dataset.mode : 'none';
 }
 
-// --- CORE LOGIC (Unchanged) ---
+// --- CORE LOGIC (Updated to use tiered profit) ---
 function fillTable(data, tableId) {
   const rateInput = document.getElementById("rate");
-  const profitInput = document.getElementById("profit");
+  const profitStandardInput = document.getElementById("profit_standard");
+  const profitPassInput = document.getElementById("profit_pass");
+
   const rate = parseFloat(rateInput.value);
-  const profitPercent = parseFloat(profitInput.value);
+  const profitStandard = parseFloat(profitStandardInput.value);
+  const profitPass = parseFloat(profitPassInput.value);
+
   const roundMode = getSelectedRoundMode();
   const tbody = document.getElementById(tableId);
 
-  if (isNaN(rate) || rate <= 0 || isNaN(profitPercent) || profitPercent < 0) {
+  // Check for required inputs
+  if (isNaN(rate) || rate <= 0 || isNaN(profitStandard) || profitStandard < 0 || isNaN(profitPass) || profitPass < 0) {
     tbody.innerHTML = "";
     rateInput.classList.toggle('invalid', isNaN(rate) || rate <= 0);
     return;
@@ -602,7 +676,12 @@ function fillTable(data, tableId) {
 
   tbody.innerHTML = "";
   data.forEach(item => {
-    const costRaw = (item.coin / 1000) * rate;           
+    const costRaw = (item.coin / 1000) * rate; 
+    
+    // Determine which profit margin to use: use profitPass if item has a label (Pass), otherwise use profitStandard.
+    const isPass = !!item.label;
+    const profitPercent = isPass ? profitPass : profitStandard;
+    
     const profitAmt = costRaw * (profitPercent / 100);  
     
     let sellPriceRaw = costRaw + profitAmt;
@@ -630,7 +709,10 @@ function fillTable(data, tableId) {
         <td>${item.coin}</td>
         <td>${guideText}</td>
         <td>${format(Math.round(costRaw))}Ks</td>
-        <td><strong style="color: var(--primary);">${format(sellPrice)}Ks</strong></td>
+        <!-- SELL PRICE CELL with new class for highlight effect -->
+        <td class="sell-price-cell">
+          <span class="sell-price-text">${format(sellPrice)}Ks</span>
+        </td>
         <td>${format(Math.round(profitCalc))}Ks</td>
       </tr>
     `;
@@ -638,8 +720,10 @@ function fillTable(data, tableId) {
 }
 
 function calculate() {
+  // Save all three inputs to localStorage
   localStorage.setItem('mlbb_calc_rate', document.getElementById("rate").value);
-  localStorage.setItem('mlbb_calc_profit', document.getElementById("profit").value);
+  localStorage.setItem('mlbb_calc_profit_standard', document.getElementById("profit_standard").value);
+  localStorage.setItem('mlbb_calc_profit_pass', document.getElementById("profit_pass").value);
   localStorage.setItem('mlbb_calc_roundMode', getSelectedRoundMode());
 
   fillTable(normalData, "resultTable");
@@ -658,7 +742,8 @@ function copyList(tableId) {
   let text = "";
   rows.forEach(row => {
     const firstCell = row.cells[0].textContent.trim();
-    const sellText = row.cells[5].textContent.trim(); 
+    // Use the inner span content for copying
+    const sellText = row.cells[5].querySelector('.sell-price-text').textContent.trim(); 
 
     const cleanSellText = sellText.replace(/Ks/g, '').trim();
 
@@ -683,7 +768,7 @@ function copyList(tableId) {
   }
 }
 
-// --- PARTICLE LOGIC (Unchanged from last step) ---
+// --- PARTICLE LOGIC (Unchanged) ---
 
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
@@ -760,11 +845,14 @@ function animateParticles() {
 function init() {
     // 1. Load from Local Storage
     const savedRate = localStorage.getItem('mlbb_calc_rate');
-    const savedProfit = localStorage.getItem('mlbb_calc_profit');
+    const savedProfitStandard = localStorage.getItem('mlbb_calc_profit_standard');
+    const savedProfitPass = localStorage.getItem('mlbb_calc_profit_pass');
     const savedRoundMode = localStorage.getItem('mlbb_calc_roundMode') || 'none'; 
 
     if (savedRate) { document.getElementById("rate").value = savedRate; }
-    if (savedProfit) { document.getElementById("profit").value = savedProfit; }
+    // Initialize new profit fields or use defaults
+    document.getElementById("profit_standard").value = savedProfitStandard || '10'; 
+    document.getElementById("profit_pass").value = savedProfitPass || '5';
     
     document.querySelectorAll('#roundMode .mode-btn').forEach(btn => {
         const isActive = btn.dataset.mode === savedRoundMode;
@@ -777,7 +865,8 @@ function init() {
 
     // 3. Set Event Listeners
     document.getElementById("rate").addEventListener("input", calculate);
-    document.getElementById("profit").addEventListener("input", calculate);
+    document.getElementById("profit_standard").addEventListener("input", calculate);
+    document.getElementById("profit_pass").addEventListener("input", calculate);
 
     document.getElementById("roundMode").addEventListener("click", (event) => {
         const target = event.target;
